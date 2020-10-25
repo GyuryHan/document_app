@@ -2,35 +2,7 @@ const http = require('http');
 const fs = require('fs');
 const url = require('url');
 const qs = require('querystring');
-
-function templateHTML(title, list, body, control) {
-  return `
-    <!doctype html>
-    <html>
-    <head>
-      <title>WEB1 - ${title}</title>
-      <meta charset="utf-8">
-    </head>
-    <body>
-      <h1><a href="/">WEB2</a></h1>
-      ${list}
-      ${control}
-      ${body}
-    </body>
-    </html>
-    `;
-}
-
-function templateList(files) {
-    let list = '<ul>';
-    let i = 0;
-    while(i < files.length) {
-      list = list + `<li><a href="/?id=${files[i]}">${files[i]}</a></li>`
-      i += 1;
-    }
-    list = list + '</ul>';
-    return list;
-}
+const template = require('./lib/template.js');
 
 const app = http.createServer(function(request,response){
     const _url = request.url;
@@ -41,19 +13,20 @@ const app = http.createServer(function(request,response){
           fs.readdir('./data', (err, files) => {
             const title ='Hi! :-D'
             description = "Hi, Node.js";
-            let list = templateList(files);
-            const template = templateHTML(title, list, 
+
+            let list = template.list(files);
+            const html = template.html(title, list, 
               `<h2>${title}</h2><p>${description}</p>`, 
               `<a href="/create">create</a>`);
             response.writeHead(200);
-            response.end(template);
-          })
+            response.end(html);
+          });
       } else {
           fs.readdir('./data', (err, files) => {
-          fs.readFile(`data/${queryData.id}`, 'utf8', (err, description) => {
+          fs.readFile(`data/${queryData.id}`, 'utf8', (err, description) => {  //파일 읽는 방법
             const title = queryData.id;
-            let list = templateList(files);
-            const template = templateHTML(title, list, 
+            let list = template.list(files);
+            const html = template.html(title, list, 
               `<h2>${title}</h2><p>${description}</p>`,
                 `<a href="/create">create</a> 
                 <a href="/update?id=${title}">update</a>
@@ -63,15 +36,15 @@ const app = http.createServer(function(request,response){
                 </form>`
               );
             response.writeHead(200);
-            response.end(template);
+            response.end(html);
           }); 
         }); 
       }
     } else if(pathname === '/create') {
       fs.readdir('./data', (err, files) => {
         const title ='WEB - create'
-        let list = templateList(files);
-        const template = templateHTML(title, list, `
+        let list = template.list(files);
+        const html = template.html(title, list, `
         <form action="/create_process" method="post">   
           <div>
             <input type="text" name="title" placeholder="title">
@@ -85,7 +58,7 @@ const app = http.createServer(function(request,response){
         </form>
         `, '');
         response.writeHead(200);
-        response.end(template);
+        response.end(html);
       })
     } else if(pathname === '/create_process') {
       let body = '';
@@ -95,7 +68,7 @@ const app = http.createServer(function(request,response){
         // request.connection.destroy();  데이터가 많으면 접속 끊는 코드
       });
       request.on('end', function() {
-        const post = qs.parse(body);  //let?!!!  console.log(post) => { title: 'NodeJS', description: 'Node.js is..' }
+        const post = qs.parse(body);  // console.log(post) => { title: 'NodeJS', description: 'Node.js is..' }
         const title = post.title;
         const description = post.description;
 
@@ -109,8 +82,8 @@ const app = http.createServer(function(request,response){
       fs.readdir('./data', (err, files) => {
         fs.readFile(`data/${queryData.id}`, 'utf8', (err, description) => {
           const title = queryData.id;
-          let list = templateList(files);
-          const template = templateHTML(title, list, 
+          let list = template.list(files);
+          const html = template.html(title, list, 
             `
             <form action="/update_process" method="post">   
               <input type="hidden" name="id" value="${title}">  
@@ -127,7 +100,7 @@ const app = http.createServer(function(request,response){
             `,
             `<a href="/create">create</a> <a href="/update?id=${title}">update</a>`);
           response.writeHead(200);
-          response.end(template);
+          response.end(html);
         }); 
       }); 
     } else if(pathname === '/update_process') {
