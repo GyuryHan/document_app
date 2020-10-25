@@ -3,7 +3,7 @@ node JS
 
 <hr>
 
-<h5>각각의 글목록을 누르면 생성,수정,삭제 버튼이 나옵니다.
+<h5 align=center>각각의 글목록을 누르면 생성,수정,삭제 버튼이 나옵니다.
 
 ![1](https://user-images.githubusercontent.com/66048317/97101786-8635eb80-16e3-11eb-819d-f719160927c8.png)
 
